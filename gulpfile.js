@@ -1,27 +1,31 @@
 var gulp           = require('gulp'),
-		gutil          = require('gulp-util' ),
-		sass           = require('gulp-sass'),
-		browserSync    = require('browser-sync'),
-		concat         = require('gulp-concat'),
-		uglify         = require('gulp-uglify'),
-		cleanCSS       = require('gulp-clean-css'),
-		rename         = require('gulp-rename'),
-		del            = require('del'),
-		imagemin       = require('gulp-imagemin'),
-		cache          = require('gulp-cache'),
-		autoprefixer   = require('gulp-autoprefixer'),
-		ftp            = require('vinyl-ftp'),
-		notify         = require("gulp-notify");
+		gutil = require('gulp-util'),
+		sass = require('gulp-sass'),
+		babel = require('gulp-babel'),
+		browserSync = require('browser-sync'),
+		concat = require('gulp-concat'),
+		uglify = require('gulp-uglify'),
+		cleanCSS = require('gulp-clean-css'),
+		rename = require('gulp-rename'),
+		del = require('del'),
+		imagemin = require('gulp-imagemin'),
+		cache = require('gulp-cache'),
+		autoprefixer = require('gulp-autoprefixer'),
+		ftp = require('vinyl-ftp'),
+		notify = require("gulp-notify");
 
 // Скрипты проекта
 
-gulp.task('common-js', function() {
+gulp.task('common-js', function () {
 	return gulp.src([
-		'app/js/common.js',
+			'app/js/common.js',
 		])
-	.pipe(concat('common.min.js'))
-	.pipe(uglify())
-	.pipe(gulp.dest('app/js'));
+		.pipe(babel({
+			presets: ['es2015']
+		}))
+		.pipe(concat('common.min.js'))
+		.pipe(uglify())
+		.pipe(gulp.dest('app/js'));
 });
 
 gulp.task('js', ['common-js'], function() {
@@ -51,13 +55,13 @@ gulp.task('sass', function() {
 	.pipe(sass({outputStyle: 'expand'}).on("error", notify.onError()))
 	.pipe(rename({suffix: '.min', prefix : ''}))
 	.pipe(autoprefixer(['last 15 versions']))
-	// .pipe(cleanCSS()) // Опционально, закомментировать при отладке
+	.pipe(cleanCSS()) // Опционально, закомментировать при отладке
 	.pipe(gulp.dest('app/css'))
 	.pipe(browserSync.reload({stream: true}));
 });
 
-gulp.task('watch', ['sass', 'js', 'browser-sync'], function() {
-	gulp.watch(['app/sass/**/*.sass', 'app/sass/**/*.scss' ], ['sass']);
+gulp.task('watch', ['sass', 'js', 'browser-sync'], function () {
+	gulp.watch(['app/sass/**/*.sass', 'app/sass/**/*.scss', 'app/libs/**/*.css'], ['sass']);
 	gulp.watch(['libs/**/*.js', 'app/js/common.js'], ['js']);
 	gulp.watch('app/*.html', browserSync.reload);
 });
